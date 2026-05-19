@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "md-leads"
+version = "0.1.0"
+description = "Lead generation scraper for Moldova businesses without good websites"
+requires-python = ">=3.11"
+dependencies = [
+    "apify-client>=1.7",
+    "requests>=2.32",
+    "openpyxl>=3.1",
+    "typer>=0.12",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-mock>=3.12", "responses>=0.25"]
+
+[project.scripts]
+md-leads = "md_leads.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
