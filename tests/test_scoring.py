@@ -161,7 +161,7 @@ def test_score_clamped_to_max():
     assert lead.lead_score <= CFG.max_score
 
 
-def test_unknown_when_website_unchecked_with_error():
+def test_broken_when_website_has_network_error():
     eb = EnrichedBusiness(
         business=_biz(),
         website_check=WebsiteCheckResult(
