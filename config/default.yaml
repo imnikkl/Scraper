@@ -1,0 +1,38 @@
+city: "Chișinău"
+country_code: "MD"
+language: "ro"
+categories:
+  - "restaurant"
+  - "cafe"
+  - "beauty salon"
+  - "barber shop"
+  - "auto repair"
+  - "dental clinic"
+  - "fitness center"
+  - "florist"
+  - "pet store"
+  - "law firm"
+max_places_per_category: 80
+cache:
+  ttl_days: 30
+scoring:
+  weights:
+    missing_website: 10
+    broken_website: 9
+    no_https: 2
+    not_mobile_friendly: 3
+    low_pagespeed: 3
+    new_business_bonus: 2
+    active_reviews_bonus: 1
+    missing_phone_penalty: -2
+  thresholds:
+    pagespeed: 50
+    new_business_years: 2
+    active_reviews: 20
+  max_score: 15
+  exclude_good_websites: true
+safeguards:
+  max_cost_usd: 5.0
+output:
+  format: "xlsx"
+  dir: "out"
