@@ -22,3 +22,13 @@ md-leads cache clear
 ```
 
 Output: `out/leads_YYYY-MM-DD_<city>.xlsx`
+
+## Smoke test
+
+A 1-category × 3-place real run to validate end-to-end. Costs ~$0.20 Apify.
+
+```bash
+cp .env.example .env       # fill APIFY_TOKEN and PAGESPEED_API_KEY
+md-leads run --config config/smoke.yaml --verbose
+open out/leads_*.xlsx
+```
