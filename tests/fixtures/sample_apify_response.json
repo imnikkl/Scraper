@@ -1,0 +1,38 @@
+[
+  {
+    "placeId": "ChIJ-1",
+    "title": "Frizeria Centru",
+    "categoryName": "Barber shop",
+    "phone": "+373 22 111 111",
+    "address": "bd. Ștefan cel Mare 100, Chișinău",
+    "website": null,
+    "totalScore": 4.7,
+    "reviewsCount": 32,
+    "location": {"lat": 47.0245, "lng": 28.8323},
+    "url": "https://maps.google.com/?cid=1"
+  },
+  {
+    "placeId": "ChIJ-2",
+    "title": "Barbershop Old School",
+    "categoryName": "Barber shop",
+    "phone": "+373 22 222 222",
+    "address": "str. Pacii 5",
+    "website": "https://oldschool.md",
+    "totalScore": 4.2,
+    "reviewsCount": 14,
+    "location": {"lat": 47.03, "lng": 28.84},
+    "url": "https://maps.google.com/?cid=2"
+  },
+  {
+    "placeId": "ChIJ-3",
+    "title": "Salon Fără Telefon",
+    "categoryName": "Barber shop",
+    "phone": null,
+    "address": "necunoscut",
+    "website": null,
+    "totalScore": null,
+    "reviewsCount": 0,
+    "location": {"lat": 47.0, "lng": 28.8},
+    "url": "https://maps.google.com/?cid=3"
+  }
+]
