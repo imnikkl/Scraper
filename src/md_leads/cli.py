@@ -4,6 +4,7 @@ import concurrent.futures
 import json
 import logging
 import os
+import re
 import sys
 import unicodedata
 from datetime import datetime
@@ -20,8 +21,12 @@ from md_leads.enrichment.pagespeed import get_pagespeed
 from md_leads.enrichment.website_check import check_website
 from md_leads.exporter import write_xlsx
 from md_leads.models import (
-    Business, EnrichedBusiness, Lead, WebsiteStatus,
+    Business, EnrichedBusiness, Lead, OutreachItem, WebsiteStatus,
 )
+from md_leads.outreach.html_renderer import render_outreach_html
+from md_leads.outreach.links import build_links
+from md_leads.outreach.template import render_message
+from md_leads.outreach.xlsx_reader import read_leads
 from md_leads.scoring import score
 from md_leads.sources.apify_places import fetch_places, parse_apify_items
 
@@ -59,6 +64,35 @@ def _slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value)
     ascii_only = normalized.encode("ascii", "ignore").decode("ascii")
     return ascii_only.lower().replace(" ", "_")
+
+
+def _find_latest_leads_xlsx(out_dir: Path) -> Optional[Path]:
+    if not out_dir.exists():
+        return None
+    candidates = sorted(out_dir.glob("leads_*.xlsx"), reverse=True)
+    return candidates[0] if candidates else None
+
+
+def _derive_outreach_output(input_path: Path) -> Path:
+    """Replace 'leads_' prefix with 'outreach_' and '.xlsx' with '.html'."""
+    name = input_path.name
+    if name.startswith("leads_"):
+        name = "outreach_" + name[len("leads_"):]
+    else:
+        name = "outreach_" + name
+    if name.endswith(".xlsx"):
+        name = name[:-len(".xlsx")] + ".html"
+    else:
+        name = name + ".html"
+    return input_path.parent / name
+
+
+def _extract_date_from_filename(name: str) -> str:
+    """leads_2026-05-20_chisinau.xlsx → '2026-05-20'. Falls back to today."""
+    m = re.search(r"(\d{4}-\d{2}-\d{2})", name)
+    if m:
+        return m.group(1)
+    return datetime.now().strftime("%Y-%m-%d")
 
 
 def _enrich(
@@ -257,6 +291,97 @@ def cache_clear_cmd() -> None:
     cache = SQLiteCache(_cache_path(), ttl_days=30)
     cache.clear()
     typer.echo("cache cleared")
+
+
+@app.command("outreach")
+def outreach_cmd(
+    config: Path = typer.Option(Path("config/default.yaml"), "--config", "-c",
+                                exists=True, dir_okay=False),
+    input_xlsx: Optional[Path] = typer.Option(
+        None, "--input", "-i",
+        help="Path to leads_*.xlsx. Default: most recent in out/.",
+    ),
+    top: Optional[int] = typer.Option(
+        None, "--top",
+        help="How many top leads to include. Default: from config.outreach.top_n.",
+    ),
+    output: Optional[Path] = typer.Option(
+        None, "--output", "-o",
+        help="Output HTML path. Default: derived from input filename.",
+    ),
+) -> None:
+    """Generate an HTML outreach page (manual DM drafts) from a leads XLSX."""
+    _setup_logging(verbose=False)
+    cfg = load_config(config)
+
+    # Resolve input
+    if input_xlsx is None:
+        input_xlsx = _find_latest_leads_xlsx(_out_dir(cfg))
+        if input_xlsx is None:
+            raise typer.BadParameter(
+                "Niciun fișier `out/leads_*.xlsx` găsit. "
+                "Folosește --input PATH sau rulează `md-leads run` întâi."
+            )
+    if not input_xlsx.exists():
+        raise typer.BadParameter(f"Input nu există: {input_xlsx}")
+
+    # Validate config
+    your_name = (cfg.outreach.your_first_name or "").strip()
+    if not your_name:
+        raise typer.BadParameter(
+            "outreach.your_first_name lipsește din config."
+        )
+    effective_top = top if top is not None else cfg.outreach.top_n
+    if effective_top <= 0:
+        raise typer.BadParameter("--top trebuie să fie > 0")
+
+    # Resolve output
+    if output is None:
+        output = _derive_outreach_output(input_xlsx)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    # Read + render
+    leads = read_leads(input_xlsx, top_n=effective_top)
+
+    # Count totals in original XLSX (for header "X din Y")
+    total_leads = len(read_leads(input_xlsx, top_n=10_000))
+
+    items: list[OutreachItem] = []
+    by_status: dict[str, int] = {}
+    for lead in leads:
+        msg = render_message(
+            lead,
+            your_name=your_name,
+            language=cfg.outreach.language,
+            user_overrides=cfg.outreach.templates,
+        )
+        links = build_links(lead, message=msg)
+        items.append(OutreachItem(
+            lead=lead, message=msg,
+            messenger_url=links["messenger"],
+            instagram_url=links["instagram"],
+            whatsapp_url=links["whatsapp"],
+            phone_tel=links["phone_tel"],
+        ))
+        by_status[lead.status] = by_status.get(lead.status, 0) + 1
+
+    date_str = _extract_date_from_filename(input_xlsx.name)
+    html = render_outreach_html(
+        items=items,
+        meta={
+            "city": cfg.city,
+            "date": date_str,
+            "total_leads": total_leads,
+        },
+    )
+    output.write_text(html, encoding="utf-8")
+
+    typer.echo("")
+    typer.echo(f"✓ Outreach generat pentru {len(items)} leaduri "
+               f"(din {total_leads} totale)")
+    for st, count in sorted(by_status.items()):
+        typer.echo(f"  • {count:4d} {st}")
+    typer.echo(f"  → {output}")
 
 
 if __name__ == "__main__":
