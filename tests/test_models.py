@@ -37,3 +37,32 @@ def test_enriched_business_optional_fields():
     eb = EnrichedBusiness(business=b, website_check=None, pagespeed=None, idno=None)
     assert eb.business.place_id == "x"
     assert eb.website_check is None
+
+
+def test_lead_row_dataclass():
+    from md_leads.models import LeadRow
+    row = LeadRow(
+        name="X", category="cafe", phone="+373", address="a",
+        website=None, status="missing", reason="fără website",
+        lead_score=10, google_rating=4.5, reviews_count=22,
+        google_maps_url="https://maps.google.com/?cid=x",
+    )
+    assert row.name == "X"
+    assert row.website is None
+
+
+def test_outreach_item_dataclass():
+    from md_leads.models import LeadRow, OutreachItem
+    row = LeadRow(
+        name="X", category="c", phone=None, address="a",
+        website=None, status="missing", reason="r",
+        lead_score=10, google_rating=None, reviews_count=0,
+        google_maps_url="u",
+    )
+    item = OutreachItem(
+        lead=row, message="hello",
+        messenger_url=None, instagram_url=None,
+        whatsapp_url="https://wa.me/373", phone_tel="tel:+373",
+    )
+    assert item.message == "hello"
+    assert item.messenger_url is None

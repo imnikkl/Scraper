@@ -66,3 +66,30 @@ class Lead:
     status: WebsiteStatus
     reason: str
     lead_score: int
+
+
+@dataclass(slots=True)
+class LeadRow:
+    """Slim subset of the XLSX row, used internally by outreach."""
+    name: str
+    category: str
+    phone: Optional[str]
+    address: str
+    website: Optional[str]
+    status: str
+    reason: str
+    lead_score: int
+    google_rating: Optional[float]
+    reviews_count: int
+    google_maps_url: str
+
+
+@dataclass(slots=True)
+class OutreachItem:
+    """Composed for HTML rendering: lead + message + links."""
+    lead: LeadRow
+    message: str
+    messenger_url: Optional[str]
+    instagram_url: Optional[str]
+    whatsapp_url: Optional[str]
+    phone_tel: Optional[str]
