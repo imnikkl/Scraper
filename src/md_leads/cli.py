@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import sys
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -52,6 +53,12 @@ def _cache_path() -> Path:
 
 def _out_dir(cfg: RunConfig) -> Path:
     return Path(os.environ.get("MD_LEADS_OUT_DIR", cfg.output.dir))
+
+
+def _slugify(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    ascii_only = normalized.encode("ascii", "ignore").decode("ascii")
+    return ascii_only.lower().replace(" ", "_")
 
 
 def _enrich(
@@ -191,7 +198,7 @@ def run(
     out_dir = _out_dir(cfg)
     out_dir.mkdir(parents=True, exist_ok=True)
     date_str = datetime.now().strftime("%Y-%m-%d")
-    city_slug = cfg.city.lower().replace(" ", "_").replace("ș", "s")
+    city_slug = _slugify(cfg.city)
     out_path = out_dir / f"leads_{date_str}_{city_slug}.xlsx"
 
     write_xlsx(main, skipped, out_path)

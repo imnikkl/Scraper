@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 from typing import Iterable, Iterator, Optional
 
 from apify_client import ApifyClient
@@ -9,7 +8,7 @@ from apify_client import ApifyClient
 from md_leads.models import Business
 
 ACTOR_ID = "compass/crawler-google-places"
-DEFAULT_RUN_TIMEOUT = timedelta(minutes=15)
+DEFAULT_TIMEOUT_SECS = 15 * 60
 DEFAULT_MEMORY_MB = 4096
 
 logger = logging.getLogger(__name__)
@@ -71,7 +70,7 @@ def fetch_places(
                 ACTOR_ID, category, city, max_per_search)
     run = actor_client.call(
         run_input=run_input,
-        timeout=DEFAULT_RUN_TIMEOUT,
+        timeout_secs=DEFAULT_TIMEOUT_SECS,
         memory_mbytes=DEFAULT_MEMORY_MB,
     )
     if run is None or run.get("status") != "SUCCEEDED":
