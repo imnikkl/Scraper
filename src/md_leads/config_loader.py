@@ -15,6 +15,7 @@ class ScoringWeights(BaseModel):
     new_business_bonus: int
     active_reviews_bonus: int
     missing_phone_penalty: int
+    social_only: int = 7  # default to 7 for backwards-compat with older configs
 
 
 class ScoringThresholds(BaseModel):

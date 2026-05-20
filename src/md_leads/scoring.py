@@ -33,6 +33,10 @@ def _classify(eb: EnrichedBusiness, cfg: ScoringConfig) -> tuple[WebsiteStatus, 
     if wc.status_code is not None and wc.status_code >= 400:
         return WebsiteStatus.BROKEN, [f"HTTP {wc.status_code}"]
 
+    # Social-media / booking platform stand-ins → weak (no real site)
+    if wc.is_social_only:
+        return WebsiteStatus.WEAK, ["doar social media / booking"]
+
     # From here, site loads (2xx/3xx). Check quality signals.
     reasons: list[str] = []
     is_weak = False
@@ -72,6 +76,8 @@ def _calculate_score(
     elif status == WebsiteStatus.BROKEN:
         score_val += w.broken_website
     elif status == WebsiteStatus.WEAK:
+        if wc is not None and wc.is_social_only:
+            score_val += w.social_only
         if wc is not None and not wc.https:
             score_val += w.no_https
         if ps is not None and not ps.mobile_friendly:

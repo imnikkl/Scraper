@@ -92,6 +92,21 @@ def test_weak_not_mobile_friendly():
     assert "mobile" in lead.reason.lower()
 
 
+def test_weak_social_only():
+    eb = EnrichedBusiness(
+        business=_biz(website="https://facebook.com/pages/x"),
+        website_check=WebsiteCheckResult(
+            final_url="https://facebook.com/pages/x", status_code=None,
+            https=True, is_parking=False, error=None, is_social_only=True,
+        ),
+        pagespeed=None, idno=None,
+    )
+    lead = score(eb, CFG)
+    assert lead.status == WebsiteStatus.WEAK
+    assert "social" in lead.reason.lower()
+    assert lead.lead_score >= 7  # social_only weight default = 7
+
+
 def test_weak_no_https():
     eb = EnrichedBusiness(
         business=_biz(),

@@ -1,7 +1,35 @@
 import pytest
 import responses
 
-from md_leads.enrichment.website_check import check_website, PARKING_HOSTS
+from md_leads.enrichment.website_check import (
+    check_website, PARKING_HOSTS, SOCIAL_ONLY_HOSTS,
+)
+
+
+def test_social_facebook_url_skips_http_request():
+    # No responses.add → if the code tries to make an HTTP request, this fails.
+    r = check_website("https://facebook.com/MesAmisSalon")
+    assert r.is_social_only is True
+    assert r.error is None
+    assert r.status_code is None  # no fetch attempted
+
+
+def test_social_instagram_url_skips_http():
+    r = check_website("https://www.instagram.com/coffeehug.md")
+    assert r.is_social_only is True
+
+
+def test_social_alteg_io_subdomain_detected():
+    r = check_website("https://n279610.alteg.io/")
+    assert r.is_social_only is True
+
+
+def test_real_website_not_flagged_social():
+    with responses.RequestsMock() as rsps:
+        rsps.add(responses.GET, "https://aproape.md/", status=200, body="OK")
+        r = check_website("https://aproape.md/")
+        assert r.is_social_only is False
+        assert r.status_code == 200
 
 
 @responses.activate

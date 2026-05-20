@@ -36,6 +36,7 @@ class WebsiteCheckResult:
     https: bool
     is_parking: bool
     error: Optional[str]   # populated when request failed
+    is_social_only: bool = False  # site is just Facebook/Instagram/booking platform
 
 
 @dataclass(slots=True)

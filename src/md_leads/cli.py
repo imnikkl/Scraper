@@ -162,6 +162,20 @@ def run(
                                    max_cost_usd, yes)
     logger.info("fetched %d raw businesses", len(businesses))
 
+    # In-run dedup: same (name, phone) appearing across categories
+    seen_keys: set[tuple[str, str]] = set()
+    deduped: list[Business] = []
+    for b in businesses:
+        key = (b.name.strip().lower(), (b.phone or "").strip())
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        deduped.append(b)
+    if len(deduped) < len(businesses):
+        logger.info("in-run dedup: %d unique (dropped %d duplicates)",
+                    len(deduped), len(businesses) - len(deduped))
+    businesses = deduped
+
     fresh = [b for b in businesses if not cache.is_recent(b.name, b.phone)]
     logger.info("after cache dedup: %d to enrich (skipped %d cached)",
                 len(fresh), len(businesses) - len(fresh))

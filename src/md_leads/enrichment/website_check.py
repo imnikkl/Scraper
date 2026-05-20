@@ -22,6 +22,44 @@ PARKING_HOSTS: frozenset[str] = frozenset({
     "bodis.com",
 })
 
+# Hosts that are NOT a real business website but a social/booking presence.
+# Detected on the raw URL before HTTP request — no point fetching them.
+SOCIAL_ONLY_HOSTS: frozenset[str] = frozenset({
+    "facebook.com",
+    "m.facebook.com",
+    "instagram.com",
+    "tiktok.com",
+    "youtube.com",
+    "youtu.be",
+    "twitter.com",
+    "x.com",
+    "linkedin.com",
+    "vk.com",
+    "ok.ru",
+    "t.me",          # Telegram
+    "wa.me",         # WhatsApp short links
+    "linktr.ee",
+    "google.com",    # Google business pages / search URLs
+    # Booking / scheduling platforms used as a "site"
+    "alteg.io",
+    "dikidi.net",
+    "dikidi.ru",
+    "heygoldie.com",
+    "choiceqr.com",
+    "n279610.alteg.io",  # specific subdomains caught via suffix match below
+})
+
+# Suffix-based matches for platforms with arbitrary subdomains.
+SOCIAL_ONLY_SUFFIXES: tuple[str, ...] = (
+    ".alteg.io",
+    ".dikidi.net",
+    ".dikidi.ru",
+    ".facebook.com",
+    ".instagram.com",
+    ".choiceqr.com",
+    ".heygoldie.com",
+)
+
 PARKING_TITLE_PATTERNS = [
     re.compile(r"buy\s+this\s+domain", re.I),
     re.compile(r"domain\s+for\s+sale", re.I),
@@ -60,6 +98,15 @@ def _normalize_url(url: str) -> Optional[str]:
     return url
 
 
+def _is_social_only_host(url: str) -> bool:
+    host = urlparse(url).netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+    if host in SOCIAL_ONLY_HOSTS:
+        return True
+    return any(host.endswith(suffix) for suffix in SOCIAL_ONLY_SUFFIXES)
+
+
 def _is_parking(final_url: str, body: str) -> bool:
     host = urlparse(final_url).netloc.lower()
     # Strip leading www.
@@ -83,6 +130,12 @@ def check_website(url: str) -> WebsiteCheckResult:
         return WebsiteCheckResult(
             final_url=None, status_code=None, https=False,
             is_parking=False, error="invalid URL",
+        )
+    # Skip HTTP request for known social/booking hosts — they're not real sites.
+    if _is_social_only_host(norm):
+        return WebsiteCheckResult(
+            final_url=norm, status_code=None, https=norm.startswith("https://"),
+            is_parking=False, error=None, is_social_only=True,
         )
     session = _session()
     try:

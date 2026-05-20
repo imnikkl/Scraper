@@ -18,6 +18,7 @@ scoring:
     new_business_bonus: 2
     active_reviews_bonus: 1
     missing_phone_penalty: -2
+    social_only: 7
   thresholds:
     pagespeed: 50
     new_business_years: 2
