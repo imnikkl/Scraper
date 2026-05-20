@@ -44,6 +44,14 @@ class OutputConfig(BaseModel):
     dir: str = "out"
 
 
+class OutreachConfig(BaseModel):
+    your_first_name: str = "Nichita"
+    top_n: int = Field(default=20, ge=1, le=500)
+    language: str = "ro"
+    # Optional per-language overrides; merged onto DEFAULT_TEMPLATES at render time.
+    templates: dict[str, dict[str, str]] = Field(default_factory=dict)
+
+
 class RunConfig(BaseModel):
     city: str
     country_code: str
@@ -54,6 +62,7 @@ class RunConfig(BaseModel):
     scoring: ScoringConfig
     safeguards: SafeguardsConfig
     output: OutputConfig
+    outreach: OutreachConfig = Field(default_factory=OutreachConfig)
 
 
 def load_config(path: Path) -> RunConfig:

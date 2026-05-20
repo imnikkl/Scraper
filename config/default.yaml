@@ -37,3 +37,7 @@ safeguards:
 output:
   format: "xlsx"
   dir: "out"
+outreach:
+  your_first_name: "Nichita"
+  top_n: 20
+  language: "ro"
