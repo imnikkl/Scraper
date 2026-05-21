@@ -119,14 +119,20 @@ def _render_card(idx: int, item: OutreachItem) -> str:
             f'<a class="btn btn-secondary" href="{_e(item.instagram_url)}" '
             f'target="_blank" rel="noopener noreferrer">📷 Instagram</a>'
         )
+    if item.viber_url:
+        buttons.append(
+            f'<a class="btn btn-secondary" href="{_e(item.viber_url)}">'
+            f'💜 Viber</a>'
+        )
     if item.whatsapp_url:
         buttons.append(
             f'<a class="btn btn-secondary" href="{_e(item.whatsapp_url)}" '
             f'target="_blank" rel="noopener noreferrer">💚 WhatsApp</a>'
         )
-    if item.phone_tel:
+    if item.telegram_url:
         buttons.append(
-            f'<a class="btn btn-secondary" href="{_e(item.phone_tel)}">📞 Sună</a>'
+            f'<a class="btn btn-secondary" href="{_e(item.telegram_url)}" '
+            f'target="_blank" rel="noopener noreferrer">✈️ Telegram</a>'
         )
     if lead.google_maps_url:
         buttons.append(

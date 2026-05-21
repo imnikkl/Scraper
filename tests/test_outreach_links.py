@@ -145,7 +145,8 @@ def test_build_links_for_facebook_lead():
     assert links["messenger"] == "https://m.me/MesAmisSalon"
     assert links["instagram"] is None
     assert links["whatsapp"].startswith("https://wa.me/37322000000")
-    assert links["phone_tel"] == "tel:+37322000000"
+    assert links["viber"] == "viber://chat?number=%2B37322000000"
+    assert links["telegram"] == "https://t.me/+37322000000"
 
 
 def test_build_links_for_instagram_lead():
@@ -161,11 +162,27 @@ def test_build_links_for_missing_website_lead():
     assert links["messenger"] is None
     assert links["instagram"] is None
     assert links["whatsapp"] is not None
-    assert links["phone_tel"] is not None
+    assert links["viber"] is not None
+    assert links["telegram"] is not None
 
 
 def test_build_links_for_lead_without_phone():
     lead = _lead(phone=None, website="https://example.md")
     links = build_links(lead, message="hi")
     assert links["whatsapp"] is None
-    assert links["phone_tel"] is None
+    assert links["viber"] is None
+    assert links["telegram"] is None
+
+
+def test_phone_to_telegram_basic():
+    from md_leads.outreach.links import phone_to_telegram
+    assert phone_to_telegram("+373 22 244 183") == "https://t.me/+37322244183"
+    assert phone_to_telegram("") is None
+    assert phone_to_telegram("abc") is None
+
+
+def test_phone_to_viber_basic():
+    from md_leads.outreach.links import phone_to_viber
+    assert phone_to_viber("+373 22 244 183") == "viber://chat?number=%2B37322244183"
+    assert phone_to_viber("") is None
+    assert phone_to_viber("abc") is None

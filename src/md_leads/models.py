@@ -91,5 +91,6 @@ class OutreachItem:
     message: str
     messenger_url: Optional[str]
     instagram_url: Optional[str]
+    viber_url: Optional[str]
     whatsapp_url: Optional[str]
-    phone_tel: Optional[str]
+    telegram_url: Optional[str]

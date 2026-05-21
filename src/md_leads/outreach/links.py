@@ -113,12 +113,34 @@ def phone_to_whatsapp(
     return base
 
 
+def phone_to_telegram(phone: str) -> Optional[str]:
+    """Open Telegram chat by phone if user has registered Telegram.
+
+    Telegram does not support pre-filled message via URL.
+    """
+    digits = _normalize_md_phone(phone)
+    if not digits:
+        return None
+    return f"https://t.me/+{digits}"
+
+
+def phone_to_viber(phone: str) -> Optional[str]:
+    """Open Viber chat by phone (deep link).
+
+    Works on devices with Viber installed. Pre-filled message not supported.
+    """
+    digits = _normalize_md_phone(phone)
+    if not digits:
+        return None
+    return f"viber://chat?number=%2B{digits}"
+
+
 def build_links(lead: LeadRow, message: str) -> dict[str, Optional[str]]:
-    digits = _normalize_md_phone(lead.phone or "")
     return {
-        "messenger":  facebook_to_messenger(lead.website or ""),
-        "instagram":  instagram_to_dm(lead.website or ""),
-        "whatsapp":   phone_to_whatsapp(lead.phone or "",
-                                        prefilled_message=message),
-        "phone_tel":  f"tel:+{digits}" if digits else None,
+        "messenger": facebook_to_messenger(lead.website or ""),
+        "instagram": instagram_to_dm(lead.website or ""),
+        "viber":     phone_to_viber(lead.phone or ""),
+        "whatsapp":  phone_to_whatsapp(lead.phone or "",
+                                       prefilled_message=message),
+        "telegram":  phone_to_telegram(lead.phone or ""),
     }

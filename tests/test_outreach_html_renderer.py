@@ -13,8 +13,9 @@ def _item(name="Salon X", **link_kwargs) -> OutreachItem:
         lead=lead, message="Bună!",
         messenger_url=link_kwargs.get("messenger"),
         instagram_url=link_kwargs.get("instagram"),
+        viber_url=link_kwargs.get("viber", "viber://chat?number=%2B37322000000"),
         whatsapp_url=link_kwargs.get("whatsapp", "https://wa.me/37322000000"),
-        phone_tel=link_kwargs.get("phone_tel", "tel:+37322000000"),
+        telegram_url=link_kwargs.get("telegram", "https://t.me/+37322000000"),
     )
 
 

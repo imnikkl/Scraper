@@ -62,7 +62,8 @@ def test_outreach_item_dataclass():
     item = OutreachItem(
         lead=row, message="hello",
         messenger_url=None, instagram_url=None,
-        whatsapp_url="https://wa.me/373", phone_tel="tel:+373",
+        viber_url=None,
+        whatsapp_url="https://wa.me/373", telegram_url="https://t.me/+373",
     )
     assert item.message == "hello"
     assert item.messenger_url is None

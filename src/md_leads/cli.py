@@ -360,8 +360,9 @@ def outreach_cmd(
             lead=lead, message=msg,
             messenger_url=links["messenger"],
             instagram_url=links["instagram"],
+            viber_url=links["viber"],
             whatsapp_url=links["whatsapp"],
-            phone_tel=links["phone_tel"],
+            telegram_url=links["telegram"],
         ))
         by_status[lead.status] = by_status.get(lead.status, 0) + 1
 
