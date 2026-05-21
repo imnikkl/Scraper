@@ -305,6 +305,11 @@ def outreach_cmd(
         None, "--top",
         help="How many top leads to include. Default: from config.outreach.top_n.",
     ),
+    skip: int = typer.Option(
+        0, "--skip",
+        help="Skip the first N leads (after sorting by score). "
+             "Useful when you already contacted the top batch.",
+    ),
     output: Optional[Path] = typer.Option(
         None, "--output", "-o",
         help="Output HTML path. Default: derived from input filename.",
@@ -334,14 +339,20 @@ def outreach_cmd(
     effective_top = top if top is not None else cfg.outreach.top_n
     if effective_top <= 0:
         raise typer.BadParameter("--top trebuie să fie > 0")
+    if skip < 0:
+        raise typer.BadParameter("--skip trebuie să fie >= 0")
 
     # Resolve output
     if output is None:
         output = _derive_outreach_output(input_xlsx)
+        if skip > 0:
+            output = output.with_name(
+                output.stem + f"_skip{skip}" + output.suffix
+            )
     output.parent.mkdir(parents=True, exist_ok=True)
 
-    # Read + render
-    leads = read_leads(input_xlsx, top_n=effective_top)
+    # Read enough rows to honor skip + top, then slice.
+    leads = read_leads(input_xlsx, top_n=skip + effective_top)[skip:]
 
     # Count totals in original XLSX (for header "X din Y")
     total_leads = len(read_leads(input_xlsx, top_n=10_000))
